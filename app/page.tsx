@@ -1,11 +1,7 @@
-import Image from "next/image";
-
 export default function Home() {
   return (
-    <div>
-      <h1 className="text-3xl">
-        StoreIt - The only storage solution you need.
-      </h1>
+    <div className="flex-center h-screen">
+      <h1 className="h1">StoreIt - The only storage solution you need.</h1>
     </div>
   );
 }
@@ -18,4 +14,6 @@ OPTIONAL _document.tsx can be implemented to create a custom HTML structure >> w
 ------------------------------------------------------------------------------------------------------------------------
 app/layout.tsx -> for global layout and <body> structure
 app/head.tsx -> for <head> content like title, meta, links etc.
+------------------------------------------------------------------------------------------------------------------------
+app/globals.css == global stylesheet the styles define in here will be applied across the entire application
 */

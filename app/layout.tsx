@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google"; // New import of font
+
 import "./globals.css";
 
 // Removed existing boilerplate fonts (plus its import statement) and replaced it with Poppins from Google/fonts
