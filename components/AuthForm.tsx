@@ -19,28 +19,41 @@ import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useState } from "react";
 import Image from "next/image"; // import the optimized Image component from Next.js
-import Link from "next/link"; // imports Link component from Next.js, used in client side navigation
+import Link from "next/link"; // imports Link component from Next.js, used in client side navigation (routes)
 
-const formSchema = z.object({
+/* const formSchema = z.object({
   username: z.string().min(2).max(50),
 });
-// 1. The code above is cut and paste from shadcn >> from "create a form schema" section---------------------
+1. The code above is cut and paste from shadcn >> from "create a form schema" section-----------------------------
+It is later replaced by new callback == authFormSchema() below       */
 
 type FormType = "sign-in" | "sign-up";
 // NOTE: "type" is a TypeScript keyword that define the shape and constraints of data
 // "type" is implemented when creating CUSTOM types that describe objects. primitives, unions, functions etc.
+
+const authFormSchema = (formType: FormType) => {
+  return z.object({
+    email: z.string().email(),
+    fullName:
+      formType === "sign-up"
+        ? z.string().min(2).max(50)
+        : z.string().optional(),
+  });
+};
 
 const AuthForm = ({ type }: { type: FormType }) => {
   // Creating a loading state with useState
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const formSchema = authFormSchema(type); // calling authFormSchema()
   // 3. Inserted Two callbacks---------------------------------------------------------------------------------
   // A. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      fullName: "",
+      email: "",
     },
   });
 
@@ -150,11 +163,23 @@ NOTE: This would NOT add a node module to the list. It will only add 3 dependenc
 NOTE: This would add a new 'ui' folder to components folder. The 'ui' would have THREE (3) new files.
   1. button.tsx   2. form.tsx   3. label.tsx
 ----------------------------------------------------------------------------------------------------------------------
-  SHADCN --IMPLEMENTATION (the order of implementation is numbered and their insert location corresponds to the numebr in the code)
+  SHADCN --IMPLEMENTATION (the order of shadcn implementation is numbered. Each insertion corresponds to the number in the code
 1. Copy and past from --   "create a form schema" section
 2. Copy and past from --   "Define a form" section
   The TWO imports { zodResolver } and { useForm } are inserted below "use Client" and above import { z }
 3. Copy and pasted TWO callback functions from "ProfileForm" >> A. form()  and B. onSubmit() handler (requires logic)
 4. A. Copy and paste rest of the imports from -- "Build your form" section
    B. Copy and paste the entire return from that section
+-------------------------------------------------------------------------------------------------------------------------
+Return statement modifications
+h1 -dynamically controlled by type={}
+2 self-closing form fields for fullName (dynamic) and email
+button -dynamically controlled spin motion (by isLoading), inner text (by type),
+div - dynamic message and corresponding link
+------------------------------------------------------------------------------------------------------------------------
+Creating authFormSchema() & calling it in AuthForm()
+NOTE: formSchema() callback was brought in from shadcn in step 1.
+A custom authFormSchema() was created to replace it (commented out after)
+However to leave existing formSchema() implementation intact, authFormSchema() was invoked inside the AuthForm and
+assigned to formSchema variable preserving the implementation.
 */
