@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -18,6 +17,9 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { z } from "zod";
+import { useState } from "react";
+import Image from "next/image"; // import the optimized Image component from Next.js
+import Link from "next/link"; // imports Link component from Next.js, used in client side navigation
 
 const formSchema = z.object({
   username: z.string().min(2).max(50),
@@ -29,6 +31,10 @@ type FormType = "sign-in" | "sign-up";
 // "type" is implemented when creating CUSTOM types that describe objects. primitives, unions, functions etc.
 
 const AuthForm = ({ type }: { type: FormType }) => {
+  // Creating a loading state with useState
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   // 3. Inserted Two callbacks---------------------------------------------------------------------------------
   // A. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -91,9 +97,39 @@ const AuthForm = ({ type }: { type: FormType }) => {
               </FormItem>
             )}
           />
-          <Button type="submit" className="form-submit-button">
+          {/* button is disabled if isLoading is true */}
+          <Button
+            type="submit"
+            className="form-submit-button"
+            disabled={isLoading}
+          >
             {type === "sign-in" ? "Sign In" : "Sign Up"}
+            {isLoading && (
+              <Image
+                src="/assets/icons/loader.svg"
+                alt="loader"
+                width={24}
+                height={24}
+                className="ml-2 animate-spin"
+              />
+            )}
           </Button>
+
+          {errorMessage && <p className="error-message">*{errorMessage}</p>}
+          <div className="body-2 flex justify-center">
+            <p className="text-light-100">
+              {type === "sign-in"
+                ? "Don't have an account"
+                : "Already have an account"}
+            </p>
+            <Link
+              href={type === "sign-in" ? "/sign-up" : "/sign-in"}
+              className="ml-1 font-medium text-brand"
+            >
+              {/* Clickable links displayed */}
+              {type === "sign-in" ? "Sign Up" : "Sign In"}
+            </Link>
+          </div>
         </form>
       </Form>
       {/* OTP Verification */}
