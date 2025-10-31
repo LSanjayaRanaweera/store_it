@@ -45,9 +45,18 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 export default Layout;
-/*
+/* ----------------------------------------------------------------------------------------------------------------
 NOTE: (auth) folder groups routes together in a single folder without affecting their URLs
-  e.g, The route to Sign-in == http://localhost:3000/sign-in and the route to Sign-up == http://localhost:3000/sign-up
-NOTE: Neither route has auth in their URLs. The folder name has been omitted from the path.
-The (auth) folder has a single layout.tsx file that has common styles for each file in the sub-folders
+The ROUTES for sign-in and sign-up pages use a relative URL path from the Homepage: https://localhost:3000
+However they will disregard the (auth) folder in their relative URL path,
+  e.g, The route to Sign-in == http://localhost:3000/sign-in instead of http://localhost:3000/(auth)/sign-in and
+  the route to Sign-up == http://localhost:3000/sign-up instead of https://localhost:3000/(auth)/sign-up
+NOTE: Neither route has (auth) in their relative URLs << omits (auth) in their path.
+-------------------------------------------------------------------------------------------------------------------
+NOTE: The (auth) folder has a single layout.tsx file that has common styles for each file (child) in the sub-folders.
+The Layout component takes ONE destructured argument { children } << from destructuring an object {}
+The value for children property == all the ReactNodes in the sub-folder?? i.e., in (auth) folder
+The {children} inserting in the return statement of Layout is where the CHILD component will be inserted in the layout.
+In other words, all the children in the (auth) folder will get this common layout described above and child specific
+implementations will be injected @ { children } in the return statement.
 */
