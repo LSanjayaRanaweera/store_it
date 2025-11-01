@@ -5,5 +5,9 @@ export const appwriteConfig = {
   usersTableId: process.env.NEXT_PUBLIC_APPWRITE_USERS_TABLE!,
   filesTableId: process.env.NEXT_PUBLIC_APPWRITE_FILE_TABLE!,
   bucketId: process.env.NEXT_PUBLIC_APPWRITE_BUCKET!,
-  secretKey: process.env.NEXT_APPWRITE_KEY!,
+  secretKey: process.env.NEXT_APPWRITE_SECRET!,
 };
+/* The ending exclamation point is called a "non-null assertion operator",
+ It assures TypeScript that the value is NOT null or UNDEFINED
+ Assures it has a value and to override TypeScript safety checks
+ */
