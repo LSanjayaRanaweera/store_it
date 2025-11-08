@@ -21,6 +21,7 @@ import { useState } from "react";
 import Image from "next/image"; // import the optimized Image component from Next.js
 import Link from "next/link"; // imports Link component from Next.js, used in client side navigation (routes)
 import { createAccount } from "@/lib/actions/user.actions";
+import OtpModal from "@/components/OTPModal";
 
 /* const formSchema = z.object({
   username: z.string().min(2).max(50),
@@ -80,26 +81,6 @@ const AuthForm = ({ type }: { type: FormType }) => {
     }
   };
 
-  /*
-  // B. Define a submit handler.
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    // Implementation from lib/actions/user.actions.ts
-    setIsLoading(true);
-    setErrorMessage("");
-
-    try {
-      const user = await createAccount({
-        fullName: values.fullName || "",
-        email: values.email,
-      });
-      setAccountId(user.accountId);
-    } catch {
-      setErrorMessage("Failed to create account. Please try again");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-*/
   // After setting up shadcn, implement the return statement
   return (
     <>
@@ -184,6 +165,10 @@ const AuthForm = ({ type }: { type: FormType }) => {
         </form>
       </Form>
       {/* OTP Verification */}
+
+      {true && (
+        <OtpModal email={form.getValues("email")} accountId={accountId} />
+      )}
     </>
   );
 };
