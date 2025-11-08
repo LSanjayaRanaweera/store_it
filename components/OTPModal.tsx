@@ -1,26 +1,26 @@
-import React, { useState } from "react";
+"use client"; // A directive used in Next.js with the App Router to mark a file or component as a Client Component.
 
 // Copied from https://ui.shadcn.com/docs/components/alert-dialog
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"; // This file was added after running: npx shadcn@latest add alert-dialog
 // Copied from https://ui.shadcn.com/docs/components/input-otp
 import {
   InputOTP,
   InputOTPGroup,
-  InputOTPSeparator,
   InputOTPSlot,
-} from "@/components/ui/input-otp";
-import Image from "next/image";
-import { Button } from "@/components/ui/button"; // This file was added after running: npx shadcn@latest add input-otp
+} from "@/components/ui/input-otp"; // This file was added after running: npx shadcn@latest add input-otp
+import React, { useState } from "react";
+import Image from "next/image"; // Anything with "next/..." coming from built-in Next.js framework
+import { Button } from "@/components/ui/button";
+import { sendEmailOTP, verifySecret } from "@/lib/actions/user.actions";
+import { useRouter } from "next/navigation";
 
 const OtpModal = ({
   accountId,
@@ -29,25 +29,29 @@ const OtpModal = ({
   accountId: string;
   email: string;
 }) => {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // OTP submit
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Call API to verify OTP
+      // Call API to verify OTP - verifySecret(0 method in user.actions.ts
+      const sessionId = await verifySecret({ accountId, password });
+      if (sessionId) router.push("/");
     } catch (error) {
       console.error("Failed to verify OTP", error);
     }
-
     setIsLoading(false);
   };
-  // A resend feature for OTP - in case not verified within allowed time
-  const handleResendOtp = () => {
-    // Call API to resend
+  // OTP resend feature in case not able to verify within allotted time
+  const handleResendOtp = async () => {
+    // Call API to resend >> using helper method in user.actions.ts
+    await sendEmailOTP({ email });
   };
 
   return (

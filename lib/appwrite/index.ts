@@ -14,7 +14,7 @@ export const createSessionClient = async () => {
     .setProject(appwriteConfig.projectId);
 
   // Create a communication session
-  // .get("appwrite-session) retrieves the value associated with cookie key and assign it to session, hence making 'session == value'
+  // .get("appwrite-session) retrieves the value associated with cookie key and assign it to session, hence making 'session == (has) value'
   const session = (await cookies()).get("appwrite-session");
 
   if (!session || !session.value) throw new Error("No session");
@@ -39,12 +39,6 @@ export const createAdminClient = async () => {
     .setProject(appwriteConfig.projectId)
     .setKey(appwriteConfig.secretKey); // Requires "secretKey" to grant access to admin privileges
 
-  const session = (await cookies()).get("appwrite-session");
-
-  if (!session || !session.value) throw new Error("No session");
-
-  client.setSession(session.value);
-
   return {
     // GETTERS for admin - full privileges granted with 'secretKey'
     // NOTE: 'Account', 'Databases', 'Storage' and 'Avatar' are GETTER objects brought in with "node-appwrite"
@@ -67,5 +61,8 @@ export const createAdminClient = async () => {
 NOTE: lib/appwrite/index.ts file serves as a centralized configuration and SDK initializer for Appwrite services.
 1. Create clients in the project to communicate with appwrite >> needs to pass a URL and a ProjectId in appwrite (arguments)
   A. Session client has similar access to a user has to his account
-  B. Admin client has full access to the data base
+     After making a request (URL/Project), it requires to establish a client 'session'
+  B. Admin client has full access to the database.
+     Once access is established to DB (URL/Project/API_KEY), it can return the GETTERS.
+     Hence, NO need to establish a session (as required in createSessionClient())
 */

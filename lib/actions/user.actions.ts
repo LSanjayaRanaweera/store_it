@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/appwrite"; // From /lib/appwrite/index.
 import { appwriteConfig } from "@/lib/appwrite/config";
 import { ID, Query } from "node-appwrite";
 import { parseStringify } from "@/lib/utils";
-import { avatarPlaceholderUrl } from "@/constants";
+import { cookies } from "next/headers";
 
 // Callback #1
 const getUserByEmail = async (email: string) => {
@@ -28,7 +28,7 @@ const handleError = (error: unknown, message: string) => {
 };
 
 // Callback #3 -- The argument == destructured object, for property 'email' the value can only be 'string'
-const sendEmailOTP = async ({ email }: { email: string }) => {
+export const sendEmailOTP = async ({ email }: { email: string }) => {
   //
   const { account } = await createAdminClient();
 
@@ -74,6 +74,31 @@ export const createAccount = async ({
     );
   }
   return parseStringify({ accountId });
+};
+
+// To call in OTPModal to verify OTP
+export const verifySecret = async ({
+  accountId,
+  password,
+}: {
+  accountId: string;
+  password: string;
+}) => {
+  try {
+    const { account } = await createAdminClient();
+
+    const session = await account.createSession(accountId, password);
+    (await cookies()).set("appwrite-session", session.secret, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "strict",
+      secure: true,
+    });
+
+    return parseStringify({ sessionId: session.$id });
+  } catch (error) {
+    handleError(error, "Failed to verify OTP");
+  }
 };
 
 /* Objective - create account flow
