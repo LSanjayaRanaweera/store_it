@@ -1,3 +1,5 @@
+"use server"; // To only run on the SERVER (backend logic to run on backend)
+
 import { Account, Avatars, Client, Databases, Storage } from "node-appwrite";
 import { appwriteConfig } from "@/lib/appwrite/config";
 import { cookies } from "next/headers";
@@ -12,7 +14,7 @@ export const createSessionClient = async () => {
     .setProject(appwriteConfig.projectId);
 
   // Create a communication session
-  // .get("appwrite-session) retrieves the value associated with cookie key and assign it to session == value
+  // .get("appwrite-session) retrieves the value associated with cookie key and assign it to session, hence making 'session == value'
   const session = (await cookies()).get("appwrite-session");
 
   if (!session || !session.value) throw new Error("No session");
@@ -20,10 +22,11 @@ export const createSessionClient = async () => {
   client.setSession(session.value);
 
   return {
+    // GETTERS for client - limited access to DB
     get account() {
       return new Account(client);
     },
-    get database() {
+    get databases() {
       return new Databases(client);
     },
   };
@@ -34,7 +37,7 @@ export const createAdminClient = async () => {
   const client = new Client()
     .setEndpoint(appwriteConfig.endpointUrl)
     .setProject(appwriteConfig.projectId)
-    .setKey(appwriteConfig.secretKey); // secret key grant access to admin privileges
+    .setKey(appwriteConfig.secretKey); // Requires "secretKey" to grant access to admin privileges
 
   const session = (await cookies()).get("appwrite-session");
 
@@ -43,13 +46,15 @@ export const createAdminClient = async () => {
   client.setSession(session.value);
 
   return {
+    // GETTERS for admin - full privileges granted with 'secretKey'
+    // NOTE: 'Account', 'Databases', 'Storage' and 'Avatar' are GETTER objects brought in with "node-appwrite"
     get account() {
       return new Account(client);
     },
-    get database() {
+    get databases() {
       return new Databases(client);
     },
-    // Additional privileges (methods) granted with secretKey (admin) access
+    // These additional privileges (methods) are granted with ONLY secretKey (admin) access
     get storage() {
       return new Storage(client);
     },

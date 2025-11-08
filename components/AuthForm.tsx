@@ -1,5 +1,6 @@
-"use client";
+"use client"; // ONLY implemented in backend/SERVER
 
+import { z } from "zod";
 // 2. Inserted Two imports from "Define a form" -------------------------------------------------------------
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -16,16 +17,19 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import { z } from "zod";
 import { useState } from "react";
 import Image from "next/image"; // import the optimized Image component from Next.js
 import Link from "next/link"; // imports Link component from Next.js, used in client side navigation (routes)
+import { createAccount } from "@/lib/actions/user.actions";
 
 /* const formSchema = z.object({
   username: z.string().min(2).max(50),
 });
-1. The code above is cut and paste from shadcn >> from "create a form schema" section-----------------------------
-It is later replaced by new callback == authFormSchema() below       */
+1. The code above is cut and pasted from shadcns' "create a form schema" section-----------------------------
+It is later replaced by the new callback == authFormSchema(), i.e., implemented below
+NOTE: The invoked authFormSchema() is assigned to the variable formSchema within AuthForm mimicking the desired implementation
+of previous formSchema callback << It let us continue with the same variable implemented in onSubmit() but would have a deep
+evaluatory logic than what was supplied originally     */
 
 type FormType = "sign-in" | "sign-up";
 // NOTE: "type" is a TypeScript keyword that define the shape and constraints of data
@@ -45,6 +49,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
   // Creating a loading state with useState
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [accountId, setAccountId] = useState(null);
 
   const formSchema = authFormSchema(type); // calling authFormSchema()
   // 3. Inserted Two callbacks---------------------------------------------------------------------------------
@@ -57,11 +62,44 @@ const AuthForm = ({ type }: { type: FormType }) => {
     },
   });
 
-  // B. Define a submit handler.
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const user = await createAccount({
+        fullName: values.fullName || "",
+        email: values.email,
+      });
+
+      setAccountId(user.accountId);
+    } catch {
+      setErrorMessage("Failed to create account. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  /*
+  // B. Define a submit handler.
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    // Implementation from lib/actions/user.actions.ts
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const user = await createAccount({
+        fullName: values.fullName || "",
+        email: values.email,
+      });
+      setAccountId(user.accountId);
+    } catch {
+      setErrorMessage("Failed to create account. Please try again");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+*/
   // After setting up shadcn, implement the return statement
   return (
     <>
