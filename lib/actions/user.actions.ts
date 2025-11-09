@@ -7,7 +7,7 @@ import { ID, Query } from "node-appwrite";
 import { parseStringify } from "@/lib/utils";
 import { cookies } from "next/headers";
 import { avatarPlaceholderUrl } from "@/constants";
-import { email } from "zod/v4";
+import { redirect } from "next/navigation";
 
 // Callback #1
 const getUserByEmail = async (email: string) => {
@@ -101,6 +101,7 @@ export const verifySecret = async ({
     handleError(error, "Failed to verify OTP");
   }
 };
+
 // To fetch current user from a session??
 export const getCurrentUser = async () => {
   // First need access to databases and account from session client
@@ -117,6 +118,35 @@ export const getCurrentUser = async () => {
   if (user.total <= 0) return null;
 
   return parseStringify(user.documents[0]);
+};
+
+// Sign out a user - code snippet can be generated with Appwrite Assistant -- AI
+export const signOutUser = async () => {
+  const { account } = await createSessionClient();
+  try {
+    // delete the current session
+    await account.deleteSession("current");
+    (await cookies()).delete("appwrite-session");
+  } catch (error) {
+    handleError(error, "Failed to sign out user");
+  } finally {
+    redirect("/sign-in");
+  }
+};
+
+// Sign in User by email
+export const signInUser = async ({ email }: { email: string }) => {
+  try {
+    const existingUser = await getUserByEmail(email);
+    // If user exists -- send an OTP
+    if (existingUser) {
+      await sendEmailOTP({ email });
+      return parseStringify({ accountId: existingUser.accountId });
+    }
+    return parseStringify({ accountId: null, error: "User not found" });
+  } catch (error) {
+    handleError(error, "Failed to send email OTP");
+  }
 };
 /* Objective - create account flow
 1. User enters full name and email

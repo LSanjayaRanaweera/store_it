@@ -1,6 +1,6 @@
 "use client"; // ONLY implemented in backend/SERVER
 
-import { z } from "zod";
+import { string, z } from "zod";
 // 2. Inserted Two imports from "Define a form" -------------------------------------------------------------
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import Image from "next/image"; // import the optimized Image component from Next.js
 import Link from "next/link"; // imports Link component from Next.js, used in client side navigation (routes)
-import { createAccount } from "@/lib/actions/user.actions";
+import { createAccount, signInUser } from "@/lib/actions/user.actions";
 import OtpModal from "@/components/OTPModal";
 
 /* const formSchema = z.object({
@@ -66,12 +66,15 @@ const AuthForm = ({ type }: { type: FormType }) => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     setErrorMessage("");
-
+    // Go over
     try {
-      const user = await createAccount({
-        fullName: values.fullName || "",
-        email: values.email,
-      });
+      const user =
+        type === "sign-up"
+          ? await createAccount({
+              fullName: values.fullName || "",
+              email: values.email,
+            })
+          : await signInUser({ email: values.email });
 
       setAccountId(user.accountId);
     } catch {
