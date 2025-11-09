@@ -31,3 +31,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+// GO OVER why we need these configurations? to overcome what?

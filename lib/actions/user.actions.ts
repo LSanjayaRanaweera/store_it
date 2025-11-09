@@ -1,11 +1,13 @@
 "use server";
 // This DIRECTIVE in Next.js marks a 'file' OR a 'function' to run EXCLUSIVELY on the server, i.e., to enable 'server actions' and to secure 'backend logic'
 
-import { createAdminClient } from "@/lib/appwrite"; // From /lib/appwrite/index.ts
+import { createAdminClient, createSessionClient } from "@/lib/appwrite"; // From /lib/appwrite/index.ts
 import { appwriteConfig } from "@/lib/appwrite/config";
 import { ID, Query } from "node-appwrite";
 import { parseStringify } from "@/lib/utils";
 import { cookies } from "next/headers";
+import { avatarPlaceholderUrl } from "@/constants";
+import { email } from "zod/v4";
 
 // Callback #1
 const getUserByEmail = async (email: string) => {
@@ -67,8 +69,7 @@ export const createAccount = async ({
       {
         fullName,
         email,
-        avatar:
-          "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png",
+        avatar: avatarPlaceholderUrl,
         accountId,
       },
     );
@@ -100,7 +101,23 @@ export const verifySecret = async ({
     handleError(error, "Failed to verify OTP");
   }
 };
+// To fetch current user from a session??
+export const getCurrentUser = async () => {
+  // First need access to databases and account from session client
+  const { databases, account } = await createSessionClient();
 
+  const result = await account.get();
+
+  const user = await databases.listDocuments(
+    appwriteConfig.databaseId,
+    appwriteConfig.usersTableId,
+    [Query.equal("accountId", result.$id)], // return only the user whose queried accountId matches $id in results
+  );
+
+  if (user.total <= 0) return null;
+
+  return parseStringify(user.documents[0]);
+};
 /* Objective - create account flow
 1. User enters full name and email
 2. Check if the user already exist using the email (we will use this to identify if we still need to create a user document or not
