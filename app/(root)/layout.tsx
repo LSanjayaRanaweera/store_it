@@ -15,7 +15,8 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
       {/* destructured currentUser object and assigning all it's properties to props with same name */}
       <Sidebar {...currentUser} />
       <section className="flex h-full flex-1 flex-col">
-        <MobileNavigation />
+        {/* pass the same destructured currentUser object */}
+        <MobileNavigation {...currentUser} />
         <Header />
         <div className="main-content">{children}</div>
       </section>
