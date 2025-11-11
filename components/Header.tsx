@@ -4,16 +4,24 @@ import Search from "@/components/Search";
 import FileUploader from "@/components/FileUploader";
 import { signOutUser } from "@/lib/actions/user.actions";
 
-const Header = () => {
+const Header = ({
+  userId,
+  accountId,
+}: {
+  userId: string;
+  accountId: string;
+}) => {
   return (
     <header className="header">
       <Search />
       <div className="header-wrapper">
-        <FileUploader />
+        {/* Prop Drilling from <FileUploader /> <Header /> to <Layout /> */}
+        <FileUploader ownerId={userId} accountId={accountId} />
         {/* NOTE: below */}
         <form
           action={async () => {
             "use server";
+
             await signOutUser();
           }}
         >

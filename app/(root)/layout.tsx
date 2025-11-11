@@ -4,6 +4,9 @@ import MobileNavigation from "@/components/MobileNavigation";
 import Header from "@/components/Header";
 import { getCurrentUser } from "@/lib/actions/user.actions";
 import { redirect } from "next/navigation";
+import { Toaster } from "@/components/ui/toaster"; // { Toaster } NOT { Toast }
+
+// export const dynamic = "force-dynamic"
 
 const Layout = async ({ children }: { children: React.ReactNode }) => {
   // Accessing current 'user' from client session to implement 'fullName' and 'email' properties on <Sidebar />
@@ -17,9 +20,11 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
       <section className="flex h-full flex-1 flex-col">
         {/* pass the same destructured currentUser object */}
         <MobileNavigation {...currentUser} />
-        <Header />
+        {/* Prop Drilling <Layout /> <Header /> <FileUploader /> for uploadFiles() method in file.actions.ts */}
+        <Header userId={currentUser.$id} accountId={currentUser.accountId} />
         <div className="main-content">{children}</div>
       </section>
+      <Toaster />
     </main>
   );
 };
