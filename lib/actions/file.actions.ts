@@ -3,9 +3,10 @@
 import { createAdminClient } from "@/lib/appwrite";
 import { InputFile } from "node-appwrite/file";
 import { appwriteConfig } from "@/lib/appwrite/config";
-import { ID } from "node-appwrite";
+import { ID, Models, Query } from "node-appwrite";
 import { constructFileUrl, getFileType, parseStringify } from "@/lib/utils";
 import { revalidatePath } from "next/cache"; // FROM node_modules/next/cache.d.ts
+import { getCurrentUser } from "@/lib/actions/user.actions";
 
 // This Callback is copied and pasted from user.actions.ts (where it was originally created)
 const handleError = (error: unknown, message: string) => {
@@ -13,7 +14,7 @@ const handleError = (error: unknown, message: string) => {
   throw error;
 };
 
-// 1st file.action utility function??
+// 1. To be implemented in FileUploader.tsx
 export const uploadFile = async ({
   // These Props are destructured from UploadFileProps declared in types/index.d.ts file)
   file,
@@ -64,5 +65,75 @@ export const uploadFile = async ({
   } catch (error) {
     handleError(error, "Failed to upload files");
   }
+  // NOTE: The 1st catch() belongs to databasea.creatDocument() and the last catch() belongs to try/catch block
 };
-// The 1st catch() belongs to .creatDocument() and the last catch() belongs to try/catch block
+
+// Callback to be used in getFiles() method
+const createQueries = (
+  currentUser: Models.Document,
+  /*
+  types: string[],
+  searchText: string,
+  sort: string,
+  limit?: number, */
+) => {
+  const queries = [
+    // multiple different appwrite queries
+    Query.or([
+      Query.equal("owner", [currentUser.$id]),
+      Query.contains("users", [currentUser.email]),
+    ]),
+  ];
+  /*
+  // add more queries >> Search, Sort, Limits etc.
+  if (types.length > 0) queries.push(Query.equal("type", types));
+  if (searchText) queries.push(Query.contains("name", searchText));
+  if (searchText) queries.push(Query.contains("name", searchText));
+  if (limit) queries.push(Query.limit(limit));
+
+  if (sort) {
+    const [sortBy, orderBy] = sort.split("-");
+
+    queries.push(
+      orderBy === "asc" ? Query.orderAsc(sortBy) : Query.orderDesc(sortBy),
+    );
+  }
+  */
+  return queries;
+};
+
+// 2. To be implemented in Sort.tsx
+export const getFiles = async () => /* {
+
+  types = [],
+  searchText = "",
+  sort = "$createdAt-desc",
+  limit,
+
+
+}: GetFilesProps
+*/ {
+  // To retrieve files from DB, 1st need access to DB
+  const { databases } = await createAdminClient();
+  try {
+    const currentUser = await getCurrentUser();
+
+    if (!currentUser) throw new Error("User not found");
+
+    const queries = createQueries(currentUser); //, types, searchText, sort, limit
+    // console.log 1 -- displayed in Both console and terminal. Two objects "currentUser" and "queries"
+    console.log({ currentUser, queries });
+
+    const files = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.filesTableId,
+      queries,
+    );
+    // console.log 2 -- displayed in both console and terminal. One object "files"
+    console.log({ files });
+
+    return parseStringify(files);
+  } catch (error) {
+    handleError(error, "Failed to get files");
+  }
+};
