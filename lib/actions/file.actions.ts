@@ -122,7 +122,7 @@ export const getFiles = async () => /* {
 
     const queries = createQueries(currentUser); //, types, searchText, sort, limit
     // console.log 1 -- displayed in Both console and terminal. Two objects "currentUser" and "queries"
-    console.log({ currentUser, queries });
+    // console.log({ currentUser, queries });
 
     const files = await databases.listDocuments(
       appwriteConfig.databaseId,
@@ -130,10 +130,34 @@ export const getFiles = async () => /* {
       queries,
     );
     // console.log 2 -- displayed in both console and terminal. One object "files"
-    console.log({ files });
-
+    // console.log({ files });
     return parseStringify(files);
   } catch (error) {
     handleError(error, "Failed to get files");
+  }
+};
+
+// Go over this logic all the way to return of try block. The logic seems to be the same for most of these callbacks
+export const renameFile = async ({
+  fileId,
+  name,
+  extension,
+  path,
+}: RenameFileProps) => {
+  // Access database
+  const { databases } = await createAdminClient();
+
+  try {
+    const newName = `${name}.${extension}`;
+    const updatedFile = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.filesTableId,
+      fileId,
+      { name: newName },
+    );
+    revalidatePath(path);
+    return parseStringify(updatedFile);
+  } catch (error) {
+    handleError(error, "Failed to rename files");
   }
 };

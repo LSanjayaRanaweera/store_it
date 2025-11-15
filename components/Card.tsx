@@ -8,6 +8,7 @@ import ActionDropdown from "@/components/ActionDropdown";
 const Card = ({ file }: { file: Models.Document }) => {
   // <Link/> requires a "href"
   return (
+    /* <Link/> requires an href="", target="_blank" will open a new pop-up window for clicking on <Link /> */
     <Link href={file.url} target="_blank" className="file-card">
       <div className="flex justify-between">
         <Thumbnail

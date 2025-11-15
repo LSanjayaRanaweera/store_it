@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "cloud.appwrite.io",
+        hostname: "nyc.cloud.appwrite.io", // updated from cloud.appwrite.io to nyc.cloud.appwrite.io  << Eliminated the error occurred with uploading images
       },
     ],
   },

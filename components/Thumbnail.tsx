@@ -10,7 +10,7 @@ interface Props {
   className?: string; // optional
 }
 
-const Thumbnail = ({
+export const Thumbnail = ({
   type,
   extension,
   url = "", // Initialize to empty string even though this input is optional

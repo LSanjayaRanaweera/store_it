@@ -115,7 +115,9 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
                       src="/assets/icons/file-loader.gif"
                       width={80}
                       height={26}
-                      alt="Loader"
+                      alt="Loader"                       
+                      // The requested resource "/assets/icons/file-loader.gif" is an animated image so it will not be optimized. Consider adding the "unoptimized" property to the <Image>.
+                      unoptimized 
                     />
                   </div>
                 </div>

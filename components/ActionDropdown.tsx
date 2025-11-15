@@ -23,6 +23,8 @@ import Link from "next/link";
 import { constructDownloadUrl } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { renameFile } from "@/lib/actions/file.actions";
+import { usePathname } from "next/navigation";
 
 const ActionDropdown = ({ file }: { file: Models.Document }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,7 +33,9 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
   const [name, setName] = useState(file.name);
   const [isLoading, setIsLoading] = useState(false);
 
-  // helper 1- if we cancel the action
+  const path = usePathname();
+
+  // helper 1- if we CANCEL the action
   const closeAllModals = () => {
     setIsModalOpen(false);
     setIsDropDownOpen(false);
@@ -39,9 +43,25 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
     setName(file.name);
     // setEmail[]
   };
-  // helper 2 - if we don't cancel the action
-  const handleAction = async () => {};
-  
+  // helper 2 - if we DON"T cancel the action
+  const handleAction = async () => {
+    if (!action) return; // Don't do anything
+    setIsLoading(true);
+    let success = false;
+
+    const actions = {
+      rename: () =>
+        renameFile({ fileId: file.$id, name, extension: file.extension, path }),
+      share: () => console.log("Share"),
+      delete: () => console.log("Delete"),
+    };
+    //
+    success = await actions[action.value as keyof typeof actions]();
+
+    if (success) closeAllModals();
+    setIsLoading(false);
+  };
+
   // what does this helper function do?
   const renderDialogContent = () => {
     if (!action) return null;
