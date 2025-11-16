@@ -25,11 +25,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { renameFile } from "@/lib/actions/file.actions";
 import { usePathname } from "next/navigation";
+import { FileDetails } from "@/components/ActionsModalContent";
 
 const ActionDropdown = ({ file }: { file: Models.Document }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
-  const [action, setAction] = useState<ActionType | null>(null);
+  const [action, setAction] = useState<ActionType | null>(null); // ------------------------------------Go over
   const [name, setName] = useState(file.name);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -55,7 +56,7 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
       share: () => console.log("Share"),
       delete: () => console.log("Delete"),
     };
-    //
+    // ------------------------------------------------------------- Go over, clarify what's being implied here by each part of the code?
     success = await actions[action.value as keyof typeof actions]();
 
     if (success) closeAllModals();
@@ -80,6 +81,7 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
               onChange={(e) => setName(e.target.value)}
             />
           )}
+          {value === "details" && <FileDetails file={file} />}
         </DialogHeader>
         {["rename", "delete", "share"].includes(value) && (
           <DialogFooter className="flex flex-col gap-3 md:flex-row">
