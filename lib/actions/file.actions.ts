@@ -183,3 +183,29 @@ export const updateFileUsers = async ({
     handleError(error, "Failed to update files");
   }
 };
+// Same as above
+export const deleteFile = async ({
+  fileId,
+  bucketFileId,
+  path,
+}: DeleteFileProps) => {
+  // Access database
+  const { databases, storage } = await createAdminClient();
+
+  try {
+    // deleting from database
+    const deletedFile = await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.filesTableId,
+      fileId,
+    );
+    // delete from storage as well
+    if (deletedFile) {
+      await storage.deleteFile(appwriteConfig.bucketId, bucketFileId);
+    }
+    revalidatePath(path);
+    return parseStringify({ status: "success" });
+  } catch (error) {
+    handleError(error, "Failed to update files");
+  }
+};

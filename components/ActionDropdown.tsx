@@ -23,7 +23,11 @@ import Link from "next/link";
 import { constructDownloadUrl } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { renameFile, updateFileUsers } from "@/lib/actions/file.actions";
+import {
+  deleteFile,
+  renameFile,
+  updateFileUsers,
+} from "@/lib/actions/file.actions";
 import { usePathname } from "next/navigation";
 import { FileDetails, ShareInput } from "@/components/ActionsModalContent";
 
@@ -50,12 +54,13 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
     if (!action) return; // Don't do anything
     setIsLoading(true);
     let success = false;
-
+    // 'actions' === OBJECT with THREE properties assigned to separate functional execution. Each function is passed in an OBJECT {}
     const actions = {
       rename: () =>
         renameFile({ fileId: file.$id, name, extension: file.extension, path }),
       share: () => updateFileUsers({ fileId: file.$id, emails, path }),
-      delete: () => console.log("Delete"),
+      delete: () =>
+        deleteFile({ fileId: file.$id, bucketFileId: file.bucketFileId, path }),
     };
     // ------------------------------------------------------------- Go over, clarify what's being implied here by each part of the code?
     success = await actions[action.value as keyof typeof actions]();
@@ -108,6 +113,12 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
             />
           )}
           {/* 4. Delete */}
+          {value === "delete" && (
+            <p className="delete-confirmation">
+              Are you sure you want to delete{` `}
+              <span className="delete-file-name">{file.name}</span>
+            </p>
+          )}
         </DialogHeader>
         {["rename", "delete", "share"].includes(value) && (
           <DialogFooter className="flex flex-col gap-3 md:flex-row">
