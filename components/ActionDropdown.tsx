@@ -23,9 +23,9 @@ import Link from "next/link";
 import { constructDownloadUrl } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { renameFile } from "@/lib/actions/file.actions";
+import { renameFile, updateFileUsers } from "@/lib/actions/file.actions";
 import { usePathname } from "next/navigation";
-import { FileDetails } from "@/components/ActionsModalContent";
+import { FileDetails, ShareInput } from "@/components/ActionsModalContent";
 
 const ActionDropdown = ({ file }: { file: Models.Document }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,10 +33,11 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
   const [action, setAction] = useState<ActionType | null>(null); // ------------------------------------Go over
   const [name, setName] = useState(file.name);
   const [isLoading, setIsLoading] = useState(false);
+  const [emails, setEmails] = useState<string[]>([]); // for <ShareInput /> Implementation in renderDialogContent() callback
 
   const path = usePathname();
 
-  // helper 1- if we CANCEL the action
+  // helper 1- if we select the option to CANCEL the action
   const closeAllModals = () => {
     setIsModalOpen(false);
     setIsDropDownOpen(false);
@@ -44,7 +45,7 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
     setName(file.name);
     // setEmail[]
   };
-  // helper 2 - if we DON"T cancel the action
+  // helper 2 - if we DON"T cancel and SELECT an action
   const handleAction = async () => {
     if (!action) return; // Don't do anything
     setIsLoading(true);
@@ -53,7 +54,7 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
     const actions = {
       rename: () =>
         renameFile({ fileId: file.$id, name, extension: file.extension, path }),
-      share: () => console.log("Share"),
+      share: () => updateFileUsers({ fileId: file.$id, emails, path }),
       delete: () => console.log("Delete"),
     };
     // ------------------------------------------------------------- Go over, clarify what's being implied here by each part of the code?
@@ -61,6 +62,19 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
 
     if (success) closeAllModals();
     setIsLoading(false);
+  };
+  // helper 3 - remove a user from a list of emails
+  const handleRemoveUser = async (email: string) => {
+    // Filer the email out of emails list -- only return unmatched emails
+    const updateEmails = emails.filter((e) => e !== email);
+
+    const success = await updateFileUsers({
+      fileId: file.$id,
+      emails: updateEmails, // Assign new value for emails
+      path,
+    });
+    if (success) setEmails(updateEmails);
+    closeAllModals();
   };
 
   // what does this helper function do?
@@ -74,6 +88,8 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
           <DialogTitle className="text-center text-light-100">
             {label}
           </DialogTitle>
+          {/* Checking if each dropdown choice matches with selected 'value' */}
+          {/* 1. Rename  */}
           {value === "rename" && (
             <Input
               type="text"
@@ -81,7 +97,17 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
               onChange={(e) => setName(e.target.value)}
             />
           )}
+          {/* 2. Details  */}
           {value === "details" && <FileDetails file={file} />}
+          {/* 3. Share */}
+          {value === "share" && (
+            <ShareInput
+              file={file}
+              onInputChange={setEmails}
+              onRemove={handleRemoveUser}
+            />
+          )}
+          {/* 4. Delete */}
         </DialogHeader>
         {["rename", "delete", "share"].includes(value) && (
           <DialogFooter className="flex flex-col gap-3 md:flex-row">
@@ -177,5 +203,13 @@ export default ActionDropdown;
  In the parameters ({file}: {file: Models.Document}),
     the {file} === PROP
     the {file: Models.Document} == data type
-
+------------------------------------------------------------------------------------------------------------------------
+NOTE: The renderDialogContent() callback, implements @/components/ui/dialog installed from shadcn.
+This callback is implemented at the bottom of the return statement, underneath the <Dialog /> wrapper.
+Therefore, it is the last implementation of <ActionDropdown /> component.
+The callback renderDialogContent(), first checks if there was an action, i.e., does action has a value? for the value of action.
+In the return statement of <ActionDropdown />, setAction() is invoked on an OnClick event >> update the value of state variable 'action'.
+This 'value' of the dropdown selection is later compared with each selection choice and depending on that match a different
+callback is executed to implement the action.
+------------------------------------------------------------------------------------------------------------------------
 */
