@@ -1,6 +1,6 @@
 "use server";
 
-import { createAdminClient } from "@/lib/appwrite";
+import { createAdminClient, createSessionClient } from "@/lib/appwrite";
 import { InputFile } from "node-appwrite/file";
 import { appwriteConfig } from "@/lib/appwrite/config";
 import { ID, Models, Query } from "node-appwrite";
@@ -24,6 +24,7 @@ export const uploadFile = async ({
 }: UploadFileProps) => {
   // create an admin session get access to storage and databases
   const { storage, databases } = await createAdminClient();
+
   try {
     // Read the file (check before uploading)
     // First create an inputFile that is implemented to create bucketFile << InputFile() is from appwrite. making a file ready for appwrite??
@@ -107,22 +108,23 @@ export const getFiles = async ({
 }: GetFilesProps) => {
   // To retrieve files from DB, 1st need access to DB
   const { databases } = await createAdminClient();
+
   try {
     const currentUser = await getCurrentUser();
 
     if (!currentUser) throw new Error("User not found");
 
     const queries = createQueries(currentUser, types, searchText, sort, limit); //, searchText, sort, limit
-    // console.log 1 -- displayed in Both console and terminal. Two objects "currentUser" and "queries"
-    // console.log({ currentUser, queries });
+    // console.log 1 -- displayed in Both console and terminal.
+    // console.log({ currentUser, queries }); --Two objects "currentUser" and "queries"
 
     const files = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.filesTableId,
       queries,
     );
-    // console.log 2 -- displayed in both console and terminal. One object "files"
-    // console.log({ files });
+    // console.log 2 -- displayed in both console and terminal.
+    // console.log({ files }); --One object "files"
     return parseStringify(files);
   } catch (error) {
     handleError(error, "Failed to get files");
@@ -201,3 +203,42 @@ export const deleteFile = async ({
     handleError(error, "Failed to update files");
   }
 };
+// ============================================ TOTAL FILE SPACE USED
+export async function getTotalSpaceUsed() {
+  try {
+    const { databases } = await createSessionClient(); // SessionClient NOT adminClient
+    const currentUser = await getCurrentUser();
+    if (!currentUser) throw new Error("User is not authenticated");
+
+    const files = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.filesTableId,
+      [Query.equal("owner", [currentUser.$id])],
+    );
+    const totalSpace = {
+      image: { size: 0, latestDate: "" },
+      document: { size: 0, latestDate: "" },
+      video: { size: 0, latestDate: "" },
+      audio: { size: 0, latestDate: "" },
+      other: { size: 0, latestDate: "" },
+      used: 0,
+      all: 2 * 1024 * 1024 * 1024 /* 2GB available in bucket storage */,
+    };
+
+    files.documents.forEach((file) => {
+      const fileType = file.type as FileType;
+      totalSpace[fileType].size += file.size;
+      totalSpace.used += file.size;
+
+      if (
+        !totalSpace[fileType].latestDate ||
+        new Date(file.$updatedAt) > new Date(totalSpace[fileType].latestDate)
+      ) {
+        totalSpace[fileType].latestDate = file.$updatedAt;
+      }
+    });
+    return parseStringify(totalSpace);
+  } catch (error) {
+    handleError(error, "Error calculating total space used");
+  }
+}
