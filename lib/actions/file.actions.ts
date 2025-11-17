@@ -71,23 +71,20 @@ export const uploadFile = async ({
 // Callback to be used in getFiles() method
 const createQueries = (
   currentUser: Models.Document,
-  /*
   types: string[],
   searchText: string,
   sort: string,
-  limit?: number, */
+  limit?: number,
 ) => {
   const queries = [
-    // multiple different appwrite queries
+    // multiple different appwrite queries -- for (param) currentUser
     Query.or([
       Query.equal("owner", [currentUser.$id]),
       Query.contains("users", [currentUser.email]),
     ]),
   ];
-  /*
-  // add more queries >> Search, Sort, Limits etc.
+  // Additional queries for other params >> types, searchText, sort, limits= etc.
   if (types.length > 0) queries.push(Query.equal("type", types));
-  if (searchText) queries.push(Query.contains("name", searchText));
   if (searchText) queries.push(Query.contains("name", searchText));
   if (limit) queries.push(Query.limit(limit));
 
@@ -98,21 +95,16 @@ const createQueries = (
       orderBy === "asc" ? Query.orderAsc(sortBy) : Query.orderDesc(sortBy),
     );
   }
-  */
   return queries;
 };
 
-// 2. To be implemented in Sort.tsx
-export const getFiles = async () => /* {
-
-  types = [],
-  searchText = "",
+// 2. Implemented in app/(root)/[type]/page.tsx, to be implemented in Sort.tsx
+export const getFiles = async ({
+  types = [], // default value == empty array
+  searchText = "", // default value == empty string
   sort = "$createdAt-desc",
   limit,
-
-
-}: GetFilesProps
-*/ {
+}: GetFilesProps) => {
   // To retrieve files from DB, 1st need access to DB
   const { databases } = await createAdminClient();
   try {
@@ -120,7 +112,7 @@ export const getFiles = async () => /* {
 
     if (!currentUser) throw new Error("User not found");
 
-    const queries = createQueries(currentUser); //, types, searchText, sort, limit
+    const queries = createQueries(currentUser, types, searchText, sort, limit); //, searchText, sort, limit
     // console.log 1 -- displayed in Both console and terminal. Two objects "currentUser" and "queries"
     // console.log({ currentUser, queries });
 

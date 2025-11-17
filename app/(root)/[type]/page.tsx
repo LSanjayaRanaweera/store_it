@@ -3,11 +3,19 @@ import Sort from "@/components/Sort";
 import { getFiles } from "@/lib/actions/file.actions";
 import { Models } from "node-appwrite";
 import Card from "@/components/Card";
+import { getFileTypesParams } from "@/lib/utils";
 
-const page = async ({ params }: SearchParamProps) => {
+const page = async ({ searchParams, params }: SearchParamProps) => {
+  // Explain
   const type = ((await params)?.type as string) || "";
+  // Explain
+  const types = getFileTypesParams(type) as FileType[];
+  // Explain
+  const searchText = ((await searchParams)?.query as string) || "";
+  const sort = ((await searchParams)?.sort as string) || "";
+
   // Making a call to retrieve file from database using the helper method in file.actions.ts
-  const files = await getFiles();
+  const files = await getFiles({ types, searchText, sort }); // inputs == destructured object
 
   return (
     <div className="page-container">
